@@ -17,8 +17,10 @@
 package rlp
 
 import (
+	"encoding/hex"
 	"fmt"
 	"io"
+	"testing"
 )
 
 type MyCoolType struct {
@@ -43,4 +45,38 @@ func ExampleEncoder() {
 	// Output:
 	// <nil> → C0
 	// &{foobar 5 6} → C20506
+}
+
+type SubVersion uint64
+
+type TestStruct struct {
+	A string
+	B SubVersion
+	C string
+}
+
+type TestStructNew struct {
+	A string
+	B SubVersion
+}
+
+func TestEncode2(t *testing.T) {
+	tp := &TestStruct{A: "xx", B: 12, C: "YY"}
+
+	bytes, err := EncodeToBytes(tp)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	println(len(bytes))
+
+	fmt.Println(hex.EncodeToString(bytes))
+
+	println("==========\n")
+
+	var newTp TestStructNew
+	DecodeBytes(bytes, &newTp)
+
+	println(newTp.A)
+	println(newTp.B)
 }

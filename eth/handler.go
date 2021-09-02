@@ -86,11 +86,13 @@ type handlerConfig struct {
 	Checkpoint      *params.TrustedCheckpoint // Hard coded checkpoint for sync challenges
 	Whitelist       map[uint64]common.Hash    // Hard coded whitelist for sync challenged
 	DirectBroadcast bool
+	SubVersion      uint64
 }
 
 type handler struct {
 	networkID  uint64
 	forkFilter forkid.Filter // Fork ID filter, constant across the lifetime of the node
+	subVersion uint64
 
 	fastSync        uint32 // Flag whether fast sync is enabled (gets disabled if we already have blocks)
 	snapSync        uint32 // Flag whether fast sync should operate on top of the snap protocol
@@ -143,9 +145,11 @@ func newHandler(config *handlerConfig) (*handler, error) {
 		peers:           newPeerSet(),
 		whitelist:       config.Whitelist,
 		directBroadcast: config.DirectBroadcast,
+		subVersion:      config.SubVersion,
 		txsyncCh:        make(chan *txsync),
 		quitSync:        make(chan struct{}),
 	}
+
 	if config.Sync == downloader.FullSync {
 		// The database seems empty as the current block is the genesis. Yet the fast
 		// block is ahead, so fast sync was enabled for this node at a certain point.
@@ -246,6 +250,8 @@ func (h *handler) runEthPeer(peer *eth.Peer, handler eth.Handler) error {
 		peer.Log().Error("Snapshot extension barrier failed", "err", err)
 		return err
 	}
+	peer.Log().Error("running new peer", "peer", peer.ID())
+
 	// TODO(karalabe): Not sure why this is needed
 	if !h.chainSync.handlePeerEvent(peer) {
 		return p2p.DiscQuitting
@@ -262,7 +268,7 @@ func (h *handler) runEthPeer(peer *eth.Peer, handler eth.Handler) error {
 		td      = h.chain.GetTd(hash, number)
 	)
 	forkID := forkid.NewID(h.chain.Config(), h.chain.Genesis().Hash(), h.chain.CurrentHeader().Number.Uint64())
-	if err := peer.Handshake(h.networkID, td, hash, genesis.Hash(), forkID, h.forkFilter); err != nil {
+	if err := peer.Handshake(h.networkID, td, hash, genesis.Hash(), forkID, h.forkFilter, h.subVersion); err != nil {
 		peer.Log().Debug("Ethereum handshake failed", "err", err)
 		return err
 	}

@@ -95,6 +95,7 @@ type StatusPacket struct {
 	Head            common.Hash
 	Genesis         common.Hash
 	ForkID          forkid.ID
+	SubVersion      uint64
 }
 
 // NewBlockHashesPacket is the network packet for the block announcements.
@@ -365,3 +366,9 @@ func (*GetPooledTransactionsPacket) Kind() byte   { return GetPooledTransactions
 
 func (*PooledTransactionsPacket) Name() string { return "PooledTransactions" }
 func (*PooledTransactionsPacket) Kind() byte   { return PooledTransactionsMsg }
+
+type SubVersion uint64
+
+func (s SubVersion) NeedTransactionsBroadcastedFromPeers() bool {
+	return s&0x1 != 0x1
+}

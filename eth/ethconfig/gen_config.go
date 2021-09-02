@@ -24,6 +24,7 @@ func (c Config) MarshalTOML() (interface{}, error) {
 		SnapDiscoveryURLs       []string
 		NoPruning               bool
 		NoPrefetch              bool
+		SubVersion              uint64                 `toml:",omitempty"`
 		TxLookupLimit           uint64                 `toml:",omitempty"`
 		Whitelist               map[uint64]common.Hash `toml:"-"`
 		LightServ               int                    `toml:",omitempty"`
@@ -68,6 +69,7 @@ func (c Config) MarshalTOML() (interface{}, error) {
 	enc.EthDiscoveryURLs = c.EthDiscoveryURLs
 	enc.SnapDiscoveryURLs = c.SnapDiscoveryURLs
 	enc.NoPruning = c.NoPruning
+	enc.SubVersion = c.SubVersion
 	enc.TxLookupLimit = c.TxLookupLimit
 	enc.Whitelist = c.Whitelist
 	enc.LightServ = c.LightServ
@@ -117,6 +119,7 @@ func (c *Config) UnmarshalTOML(unmarshal func(interface{}) error) error {
 		SnapDiscoveryURLs       []string
 		NoPruning               *bool
 		NoPrefetch              *bool
+		SubVersion              *uint64                `toml:",omitempty"`
 		TxLookupLimit           *uint64                `toml:",omitempty"`
 		Whitelist               map[uint64]common.Hash `toml:"-"`
 		LightServ               *int                   `toml:",omitempty"`
@@ -175,6 +178,9 @@ func (c *Config) UnmarshalTOML(unmarshal func(interface{}) error) error {
 	}
 	if dec.NoPruning != nil {
 		c.NoPruning = *dec.NoPruning
+	}
+	if dec.SubVersion != nil {
+		c.SubVersion = *dec.SubVersion
 	}
 	if dec.TxLookupLimit != nil {
 		c.TxLookupLimit = *dec.TxLookupLimit
